@@ -1,0 +1,33 @@
+{
+  "version": "0.1.0",
+  "models": [
+    {
+      "id": "symptom-classifier",
+      "type": "onnx",
+      "path": "models/symptom/model.onnx",
+      "description": "Hybrid decision tree + transformer ensemble exported to ONNX.",
+      "input": ["symptom_features"],
+      "output": ["condition_probabilities"],
+      "sizeMB": 12.5
+    },
+    {
+      "id": "image-diagnostic",
+      "type": "tflite",
+      "path": "models/image/model.tflite",
+      "description": "EfficientNet-Lite CNN for rash/wound detection.",
+      "input": ["image_tensor"],
+      "output": ["visual_condition_probabilities"],
+      "sizeMB": 8.2
+    },
+    {
+      "id": "translator",
+      "type": "onnx",
+      "path": "models/translator/model.onnx",
+      "description": "DistilBERT/TLUnified simplification + translation head.",
+      "input": ["medical_text"],
+      "output": ["simplified_text"],
+      "sizeMB": 25.0
+    }
+  ]
+}
+

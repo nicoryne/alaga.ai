@@ -1,0 +1,29 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isOwner(resource) {
+      return request.auth != null
+        && request.auth.uid == resource.data.createdBy;
+    }
+
+    function hasRole(role) {
+      return request.auth != null
+        && role in request.auth.token.roles;
+    }
+
+    match /patients/{patientId} {
+      allow read, write: if isOwner(resource) || hasRole('doctor') || hasRole('admin');
+      allow update: if request.resource.data.keys().hasOnly([
+        'fullName','age','gender','contactNumber','region','province','barangay',
+        'latestAssessmentId','latestTriage','syncStatus','updatedAt'
+      ]);
+    }
+
+    match /assessments/{assessmentId} {
+      allow read: if isOwner(resource) || hasRole('doctor') || hasRole('admin');
+      allow create: if request.resource.data.createdBy == request.auth.uid;
+      allow update: if hasRole('doctor') || (isOwner(resource) && request.resource.data.syncStatus in ['pending','synced','error']);
+    }
+  }
+}
+
