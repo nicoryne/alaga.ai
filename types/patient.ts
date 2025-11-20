@@ -10,6 +10,7 @@ export interface PatientRecord {
   contactNumber?: string
   region: string
   province: string
+  municipality: string
   barangay: string
   createdBy: string
   createdAt: number
@@ -26,6 +27,7 @@ export interface PatientFormInput {
   contactNumber: string
   region: string
   province: string
+  municipality: string
   barangay: string
 }
 

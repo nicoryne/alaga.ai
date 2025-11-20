@@ -9,6 +9,7 @@ import {
 import { useMemo, useState } from 'react'
 import { usePatients } from '../../hooks/usePatients'
 import { PatientRecord } from '../../types/patient'
+import { Header } from '../../components/Header'
 
 const triageColors: Record<string, string> = {
   Mild: '#2ecc71',
@@ -93,15 +94,17 @@ export default function PatientsScreen() {
   }, [patients, search])
 
   return (
-    <SafeAreaView className="flex-1 bg-[#f8fafc] px-6 pt-6">
-      <View>
-        <Text className="text-lg font-semibold text-gray-900">
-          Patient Records
-        </Text>
-        <Text className="mt-1 text-sm text-gray-500">
-          Review and manage all assessments for your barangay.
-        </Text>
-      </View>
+    <SafeAreaView className="flex-1 bg-white">
+      <Header />
+      <View className="flex-1 bg-[#f8fafc] px-6 pt-6">
+        <View>
+          <Text className="text-lg font-semibold text-gray-900">
+            Patient Records
+          </Text>
+          <Text className="mt-1 text-sm text-gray-500">
+            Review and manage all assessments for your barangay.
+          </Text>
+        </View>
 
       <TextInput
         placeholder="Search for patient records..."
@@ -124,6 +127,7 @@ export default function PatientsScreen() {
         }
         renderItem={({ item }) => <PatientRow patient={item} />}
       />
+      </View>
     </SafeAreaView>
   )
 }

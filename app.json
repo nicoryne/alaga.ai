@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "alagaai",
-    "slug": "alagaai",
+    "name": "alaga.ai",
+    "slug": "alaga-ai",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "alagaai",
+    "scheme": "alaga.ai",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {

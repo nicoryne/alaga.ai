@@ -22,6 +22,13 @@ import { createAssessmentRecord } from '../../services/assessmentService'
 import { AssessmentPayload } from '../../types/assessment'
 import { SymptomSelector } from '../../components/SymptomSelector'
 import { extractSymptomsFromText } from '../../data/symptoms'
+import {
+  getRegions,
+  getProvincesByRegion,
+  getMunicipalitiesByProvince,
+  getBarangaysByMunicipality,
+} from '../../data/philippines-new'
+import { Dropdown } from '../../components/Dropdown'
 
 const initialForm: PatientFormInput = {
   fullName: '',
@@ -30,6 +37,7 @@ const initialForm: PatientFormInput = {
   contactNumber: '',
   region: '',
   province: '',
+  municipality: '',
   barangay: '',
 }
 
@@ -61,8 +69,43 @@ export default function NewAssessmentEntryScreen() {
     [detectedSymptoms, symptoms],
   )
 
+  // Geographic data
+  const regions = useMemo(() => getRegions(), [])
+  const availableProvinces = useMemo(
+    () => (form.region ? getProvincesByRegion(form.region) : []),
+    [form.region],
+  )
+  const availableMunicipalities = useMemo(
+    () =>
+      form.region && form.province
+        ? getMunicipalitiesByProvince(form.region, form.province)
+        : [],
+    [form.region, form.province],
+  )
+  const availableBarangays = useMemo(
+    () =>
+      form.region && form.province && form.municipality
+        ? getBarangaysByMunicipality(form.region, form.province, form.municipality)
+        : [],
+    [form.region, form.province, form.municipality],
+  )
+
   const updateField = (key: keyof PatientFormInput, value: string) => {
-    setForm((prev) => ({ ...prev, [key]: value }))
+    setForm((prev) => {
+      const updated = { ...prev, [key]: value }
+      // Cascade updates: clear dependent fields when parent changes
+      if (key === 'region') {
+        updated.province = ''
+        updated.municipality = ''
+        updated.barangay = ''
+      } else if (key === 'province') {
+        updated.municipality = ''
+        updated.barangay = ''
+      } else if (key === 'municipality') {
+        updated.barangay = ''
+      }
+      return updated
+    })
   }
 
   const canSubmitStep1 =
@@ -71,6 +114,7 @@ export default function NewAssessmentEntryScreen() {
     form.gender &&
     form.region &&
     form.province &&
+    form.municipality &&
     form.barangay &&
     user
 
@@ -105,21 +149,9 @@ export default function NewAssessmentEntryScreen() {
     }
   }, [])
 
-  const handleSavePatient = async () => {
-    if (!user) return
-    setSaving(true)
-    try {
-      const newPatientId = await createPatient(form, user.uid)
-      setPatientId(newPatientId)
-      setCurrentStep(2)
-    } catch (error) {
-      Alert.alert(
-        'Unable to save patient',
-        'Double-check your inputs or try again later.',
-      )
-    } finally {
-      setSaving(false)
-    }
+  const handleSavePatient = () => {
+    // Just move to next step - patient will be saved after all steps complete
+    setCurrentStep(2)
   }
 
   const handleAnalyze = async () => {
@@ -159,11 +191,18 @@ export default function NewAssessmentEntryScreen() {
   }
 
   const handleSaveAssessment = async () => {
-    if (!user || !result || !patientId) return
+    if (!user || !result) return
     setSavingAssessment(true)
     try {
+      // Save patient first if not already saved
+      let finalPatientId = patientId
+      if (!finalPatientId) {
+        finalPatientId = await createPatient(form, user.uid)
+        setPatientId(finalPatientId)
+      }
+
       const payload: AssessmentPayload = {
-        patientId,
+        patientId: finalPatientId,
         createdBy: user.uid,
         vitals: {
           bloodPressure: vitals.bloodPressure,
@@ -184,7 +223,7 @@ export default function NewAssessmentEntryScreen() {
       await createAssessmentRecord(payload)
       Alert.alert(
         'Assessment saved',
-        'Your AI results have been stored locally and will sync when online.',
+        'Patient and assessment have been stored locally and will sync when online.',
       )
     } catch (error) {
       Alert.alert(
@@ -282,14 +321,13 @@ export default function NewAssessmentEntryScreen() {
             />
           </View>
           <View className="flex-1">
-            <Text className="text-sm font-medium text-gray-700">
-              Gender *
-            </Text>
-            <TextInput
-              placeholder="Select"
-              className="mt-2 rounded-2xl border border-gray-200 px-4 py-3 text-base text-gray-900"
+            <Dropdown
+              label="Gender"
+              placeholder="Select Gender"
+              options={['Male', 'Female', 'Other']}
               value={form.gender}
-              onChangeText={(value) => updateField('gender', value)}
+              onSelect={(value) => updateField('gender', value)}
+              required
             />
           </View>
         </View>
@@ -306,37 +344,47 @@ export default function NewAssessmentEntryScreen() {
           />
         </View>
         <View>
-          <Text className="text-sm font-medium text-gray-700">Region *</Text>
-          <TextInput
+          <Dropdown
+            label="Region"
             placeholder="Select Region"
-            className="mt-2 rounded-2xl border border-gray-200 px-4 py-3 text-base text-gray-900"
+            options={regions}
             value={form.region}
-            onChangeText={(value) => updateField('region', value)}
+            onSelect={(value) => updateField('region', value)}
+            required
           />
         </View>
-        <View className="flex-row gap-4">
-          <View className="flex-1">
-            <Text className="text-sm font-medium text-gray-700">
-              Province *
-            </Text>
-            <TextInput
-              placeholder="Select Province"
-              className="mt-2 rounded-2xl border border-gray-200 px-4 py-3 text-base text-gray-900"
-              value={form.province}
-              onChangeText={(value) => updateField('province', value)}
-            />
-          </View>
-          <View className="flex-1">
-            <Text className="text-sm font-medium text-gray-700">
-              Barangay *
-            </Text>
-            <TextInput
-              placeholder="Select Barangay"
-              className="mt-2 rounded-2xl border border-gray-200 px-4 py-3 text-base text-gray-900"
-              value={form.barangay}
-              onChangeText={(value) => updateField('barangay', value)}
-            />
-          </View>
+        <View>
+          <Dropdown
+            label="Province"
+            placeholder="Select Province"
+            options={availableProvinces}
+            value={form.province}
+            onSelect={(value) => updateField('province', value)}
+            disabled={!form.region}
+            required
+          />
+        </View>
+        <View>
+          <Dropdown
+            label="Municipality/City"
+            placeholder="Select Municipality or City"
+            options={availableMunicipalities}
+            value={form.municipality}
+            onSelect={(value) => updateField('municipality', value)}
+            disabled={!form.province}
+            required
+          />
+        </View>
+        <View>
+          <Dropdown
+            label="Barangay"
+            placeholder="Select Barangay"
+            options={availableBarangays}
+            value={form.barangay}
+            onSelect={(value) => updateField('barangay', value)}
+            disabled={!form.municipality}
+            required
+          />
         </View>
       </View>
     </ScrollView>
@@ -600,11 +648,11 @@ export default function NewAssessmentEntryScreen() {
       return (
         <TouchableOpacity
           className="rounded-2xl bg-[#b39ddb] py-4"
-          disabled={!canSubmitStep1 || saving}
+          disabled={!canSubmitStep1}
           onPress={handleSavePatient}
         >
           <Text className="text-center text-base font-semibold text-white">
-            {saving ? 'Saving…' : 'Next Step'}
+            Next Step
           </Text>
         </TouchableOpacity>
       )

@@ -1,5 +1,6 @@
 import { Tabs } from 'expo-router'
 import { Text, View } from 'react-native'
+import { Home, Users, PlusCircle, RefreshCcw, UserRound } from 'lucide-react-native'
 import { useAuth } from '../../contexts/AuthContext'
 import { useConnectivity } from '../../contexts/ConnectivityContext'
 
@@ -32,6 +33,7 @@ export default function TabsLayout() {
       <Tabs
         screenOptions={{
           headerShown: false,
+          tabBarActiveTintColor: '#4fc3f7',
           tabBarInactiveTintColor: '#9ca3af',
           tabBarStyle: {
             backgroundColor: '#ffffff',
@@ -43,11 +45,51 @@ export default function TabsLayout() {
           },
         }}
       >
-        <Tabs.Screen name="index" options={{ title: 'Home' }} />
-        <Tabs.Screen name="patients" options={{ title: 'Patients' }} />
-        <Tabs.Screen name="new" options={{ title: 'New' }} />
-        <Tabs.Screen name="sync" options={{ title: 'Sync' }} />
-        <Tabs.Screen name="profile" options={{ title: 'Profile' }} />
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: 'Home',
+            tabBarIcon: ({ color, focused }) => (
+              <Home color={color} size={22} strokeWidth={focused ? 2.5 : 2} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="patients"
+          options={{
+            title: 'Patients',
+            tabBarIcon: ({ color, focused }) => (
+              <Users color={color} size={22} strokeWidth={focused ? 2.5 : 2} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="new"
+          options={{
+            title: 'New',
+            tabBarIcon: ({ color, focused }) => (
+              <PlusCircle color={color} size={22} strokeWidth={focused ? 2.5 : 2} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="sync"
+          options={{
+            title: 'Sync',
+            tabBarIcon: ({ color, focused }) => (
+              <RefreshCcw color={color} size={22} strokeWidth={focused ? 2.5 : 2} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="profile"
+          options={{
+            title: 'Profile',
+            tabBarIcon: ({ color, focused }) => (
+              <UserRound color={color} size={22} strokeWidth={focused ? 2.5 : 2} />
+            ),
+          }}
+        />
       </Tabs>
     </>
   )

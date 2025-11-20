@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react'
 import {
-  SectionList,
   Text,
   TextInput,
   TouchableOpacity,
@@ -105,30 +104,31 @@ export function SymptomSelector({ value, onChange }: SymptomSelectorProps) {
         </View>
       ) : null}
 
-      <SectionList
-        className="mt-4 max-h-80"
-        sections={filteredSections}
-        keyExtractor={(item) => item.id}
-        stickySectionHeadersEnabled={false}
-        renderSectionHeader={({ section }) => (
-          <Text className="mt-6 text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">
-            {section.title}
-          </Text>
-        )}
-        renderItem={({ item }) => (
-          <Chip
-            label={item.label}
-            selected={value.includes(item.id)}
-            onPress={() => toggleSymptom(item.id)}
-          />
-        )}
-        ListEmptyComponent={
+      <View className="mt-4">
+        {filteredSections.length === 0 ? (
           <Text className="mt-6 text-center text-sm text-gray-400">
             No matching symptoms found.
           </Text>
-        }
-        contentContainerStyle={{ paddingBottom: 16 }}
-      />
+        ) : (
+          filteredSections.map((section) => (
+            <View key={section.title} className="mb-6">
+              <Text className="mt-6 text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">
+                {section.title}
+              </Text>
+              <View className="mt-2 flex-row flex-wrap">
+                {section.data.map((item) => (
+                  <Chip
+                    key={item.id}
+                    label={item.label}
+                    selected={value.includes(item.id)}
+                    onPress={() => toggleSymptom(item.id)}
+                  />
+                ))}
+              </View>
+            </View>
+          ))
+        )}
+      </View>
     </View>
   )
 }

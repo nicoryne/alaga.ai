@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   View,
   Text,
@@ -8,10 +8,12 @@ import {
   Platform,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { useRouter } from 'expo-router'
 import { useAuth } from '../contexts/AuthContext'
 
 export default function LoginScreen() {
-  const { signIn, enableOfflineMode, initializing } = useAuth()
+  const router = useRouter()
+  const { signIn, enableOfflineMode, initializing, user, offlineMode } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -40,6 +42,12 @@ export default function LoginScreen() {
       setSubmitting(false)
     }
   }
+
+  useEffect(() => {
+    if ((user || offlineMode) && !initializing) {
+      router.replace('/(tabs)')
+    }
+  }, [user, offlineMode, initializing, router])
 
   return (
     <SafeAreaView className="flex-1 bg-white px-6">

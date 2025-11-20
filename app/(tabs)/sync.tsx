@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   Alert,
   FlatList,
+  ScrollView,
 } from 'react-native'
 import { waitForPendingWrites } from 'firebase/firestore'
 import { useMemo } from 'react'
@@ -12,6 +13,7 @@ import { db } from '../../lib/firebase'
 import { useConnectivity } from '../../contexts/ConnectivityContext'
 import { usePatients } from '../../hooks/usePatients'
 import { useAssessments } from '../../hooks/useAssessments'
+import { Header } from '../../components/Header'
 
 export default function SyncScreen() {
   const { isOnline, connectionType } = useConnectivity()
@@ -67,8 +69,10 @@ export default function SyncScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-[#f8fafc] px-6 pt-6">
-      <View className="rounded-3xl bg-white p-5 shadow-sm shadow-black/5">
+    <SafeAreaView className="flex-1 bg-white">
+      <Header />
+      <ScrollView className="flex-1 bg-[#f8fafc] px-6 pt-6">
+        <View className="rounded-3xl bg-white p-5 shadow-sm shadow-black/5">
         <Text className="text-base font-semibold text-gray-900">
           {isOnline ? 'Online' : 'Offline'}
         </Text>
@@ -99,28 +103,29 @@ export default function SyncScreen() {
         </TouchableOpacity>
       </View>
 
-      <View className="mt-6 flex-1 rounded-3xl bg-white p-5 shadow-sm shadow-black/5">
+      <View className="mt-6 rounded-3xl bg-white p-5 shadow-sm shadow-black/5">
         <Text className="text-base font-semibold text-gray-900">
           Pending Uploads
         </Text>
-        <FlatList
-          className="mt-4"
-          data={pendingUploads}
-          keyExtractor={(item) => item.id}
-          ListEmptyComponent={
-            <Text className="text-sm text-gray-400">
-              No pending uploads. You are all synced up!
-            </Text>
-          }
-          renderItem={({ item }) => (
-            <View className="mb-3 rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3">
-              <Text className="text-sm font-semibold text-amber-800">
-                {item.title}
-              </Text>
-              <Text className="text-xs text-amber-600">{item.subtitle}</Text>
-            </View>
-          )}
-        />
+        {pendingUploads.length === 0 ? (
+          <Text className="mt-4 text-sm text-gray-400">
+            No pending uploads. You are all synced up!
+          </Text>
+        ) : (
+          <View className="mt-4 gap-3">
+            {pendingUploads.map((item) => (
+              <View
+                key={item.id}
+                className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3"
+              >
+                <Text className="text-sm font-semibold text-amber-800">
+                  {item.title}
+                </Text>
+                <Text className="text-xs text-amber-600">{item.subtitle}</Text>
+              </View>
+            ))}
+          </View>
+        )}
       </View>
 
       <View className="mt-6 rounded-3xl bg-white p-5 shadow-sm shadow-black/5">
@@ -149,6 +154,7 @@ export default function SyncScreen() {
           </View>
         )}
       </View>
+      </ScrollView>
     </SafeAreaView>
   )
 }
