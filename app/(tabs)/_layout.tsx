@@ -1,6 +1,5 @@
 import { Tabs } from 'expo-router'
-import { View, Text } from 'react-native'
-import { theme } from '../../theme'
+import { Text, View } from 'react-native'
 import { useAuth } from '../../contexts/AuthContext'
 import { useConnectivity } from '../../contexts/ConnectivityContext'
 
@@ -18,10 +17,7 @@ function OfflineBanner() {
           : `No internet connection (${connectionType}). App running offline.`}
       </Text>
       {offlineMode ? (
-        <Text
-          onPress={disableOfflineMode}
-          className="mt-1 text-xs font-semibold text-amber-800 underline"
-        >
+        <Text onPress={disableOfflineMode} className="mt-1 text-xs font-semibold text-amber-800 underline">
           Exit offline mode
         </Text>
       ) : null}
@@ -36,7 +32,6 @@ export default function TabsLayout() {
       <Tabs
         screenOptions={{
           headerShown: false,
-          tabBarActiveTintColor: theme.colors.primary,
           tabBarInactiveTintColor: '#9ca3af',
           tabBarStyle: {
             backgroundColor: '#ffffff',
@@ -57,5 +52,3 @@ export default function TabsLayout() {
     </>
   )
 }
-
-

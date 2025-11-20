@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
+import { useAuth } from '../contexts/AuthContext'
 import { subscribeToPatients } from '../services/patientService'
 import { PatientRecord } from '../types/patient'
-import { useAuth } from '../contexts/AuthContext'
 
 export function usePatients() {
   const { user } = useAuth()
@@ -19,9 +19,7 @@ export function usePatients() {
       setLoading(false)
     })
     return () => unsubscribe()
-  }, [user?.uid])
+  }, [user, user?.uid])
 
   return { patients, loading }
 }
-
-

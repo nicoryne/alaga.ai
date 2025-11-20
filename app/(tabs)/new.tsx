@@ -17,10 +17,11 @@ import { useCallback, useMemo, useState } from 'react'
 import { createPatient } from '../../services/patientService'
 import { PatientFormInput } from '../../types/patient'
 import { useAuth } from '../../contexts/AuthContext'
-import { COMMON_SYMPTOMS, CommonSymptom } from '../../constants/symptoms'
 import { runAssessment, AssessmentResult } from '../../ai/engine'
 import { createAssessmentRecord } from '../../services/assessmentService'
 import { AssessmentPayload } from '../../types/assessment'
+import { SymptomSelector } from '../../components/SymptomSelector'
+import { extractSymptomsFromText } from '../../data/symptoms'
 
 const initialForm: PatientFormInput = {
   fullName: '',
@@ -48,12 +49,17 @@ export default function NewAssessmentEntryScreen() {
   const [patientId, setPatientId] = useState<string>()
   const [saving, setSaving] = useState(false)
   const [vitals, setVitals] = useState(initialVitals)
-  const [symptoms, setSymptoms] = useState<CommonSymptom[]>([])
+  const [symptoms, setSymptoms] = useState<string[]>([])
   const [notes, setNotes] = useState('')
   const [photoUri, setPhotoUri] = useState<string>()
   const [result, setResult] = useState<AssessmentResult | null>(null)
   const [language, setLanguage] = useState<'English' | 'Tagalog'>('English')
   const [savingAssessment, setSavingAssessment] = useState(false)
+  const detectedSymptoms = useMemo(() => extractSymptomsFromText(notes), [notes])
+  const suggestedSymptoms = useMemo(
+    () => detectedSymptoms.filter((symptom) => !symptoms.includes(symptom)),
+    [detectedSymptoms, symptoms],
+  )
 
   const updateField = (key: keyof PatientFormInput, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -72,7 +78,7 @@ export default function NewAssessmentEntryScreen() {
     setVitals((prev) => ({ ...prev, [key]: value }))
   }
 
-  const toggleSymptom = (symptom: CommonSymptom) => {
+  const toggleSymptom = (symptom: string) => {
     setSymptoms((prev) =>
       prev.includes(symptom)
         ? prev.filter((item) => item !== symptom)
@@ -336,38 +342,6 @@ export default function NewAssessmentEntryScreen() {
     </ScrollView>
   )
 
-  const renderSymptoms = () => (
-    <View className="mt-6">
-      <View className="flex-row items-center justify-between">
-        <Text className="text-sm font-medium text-gray-700">
-          Common Symptoms
-        </Text>
-        <Text className="text-xs text-emerald-600">
-          {symptoms.length} symptoms selected
-        </Text>
-      </View>
-      <View className="mt-3 flex-row flex-wrap gap-2">
-        {COMMON_SYMPTOMS.map((symptom) => {
-          const selected = symptoms.includes(symptom)
-          return (
-            <TouchableOpacity
-              key={symptom}
-              onPress={() => toggleSymptom(symptom)}
-              className={`rounded-full px-4 py-2 ${selected ? 'bg-[#4fc3f7]' : 'bg-gray-200'}`}
-            >
-              <Text
-                className="text-sm font-medium"
-                style={{ color: selected ? '#fff' : '#6b7280' }}
-              >
-                {symptom}
-              </Text>
-            </TouchableOpacity>
-          )
-        })}
-      </View>
-    </View>
-  )
-
   const renderPhotoSection = () => (
     <View className="mt-6">
       <Text className="text-sm font-medium text-gray-700">
@@ -441,7 +415,31 @@ export default function NewAssessmentEntryScreen() {
         ))}
       </View>
 
-      {renderSymptoms()}
+      <SymptomSelector value={symptoms} onChange={setSymptoms} />
+
+      {!!suggestedSymptoms.length && (
+        <View className="mt-4 rounded-2xl border border-dashed border-[#d8b4fe] p-4">
+          <Text className="text-sm font-semibold text-[#6d28d9]">
+            Suggested from notes
+          </Text>
+          <Text className="text-xs text-[#6b7280]">
+            Tap to confirm if these symptoms apply.
+          </Text>
+          <View className="mt-3 flex-row flex-wrap">
+            {suggestedSymptoms.map((symptom) => (
+              <TouchableOpacity
+                key={`suggest-${symptom}`}
+                onPress={() => toggleSymptom(symptom)}
+                className="mr-2 mb-2 rounded-full border border-[#d8b4fe] bg-[#f5f3ff] px-4 py-2"
+              >
+                <Text className="text-xs font-semibold text-[#6d28d9]">
+                  {symptom.replace(/_/g, ' ')}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      )}
 
       <View className="mt-6">
         <Text className="text-sm font-medium text-gray-700">

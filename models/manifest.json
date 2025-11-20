@@ -4,11 +4,11 @@
     {
       "id": "symptom-classifier",
       "type": "onnx",
-      "path": "models/symptom/model.onnx",
-      "description": "Hybrid decision tree + transformer ensemble exported to ONNX.",
-      "input": ["symptom_features"],
-      "output": ["condition_probabilities"],
-      "sizeMB": 12.5
+      "path": "models/symptom/model-symptom.onnx",
+      "description": "DistilBERT symptom classifier fine-tuned on shanover/disease_symptoms_prec_full; outputs disease probabilities for text symptoms.",
+      "input": ["input_ids", "attention_mask"],
+      "output": ["logits"],
+      "sizeMB": 255.63
     },
     {
       "id": "image-diagnostic",

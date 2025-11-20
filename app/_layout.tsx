@@ -1,3 +1,4 @@
+import '@/global.css'
 import { Stack } from 'expo-router'
 import { AuthProvider } from '../contexts/AuthContext'
 import { ConnectivityProvider } from '../contexts/ConnectivityContext'
@@ -18,4 +19,3 @@ export default function AppLayout() {
     </ConnectivityProvider>
   )
 }
-

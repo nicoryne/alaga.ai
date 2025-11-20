@@ -1,18 +1,6 @@
-import {
-  PropsWithChildren,
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import {
-  User,
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  signOut as firebaseSignOut,
-} from 'firebase/auth'
+import { User, signOut as firebaseSignOut, onAuthStateChanged, signInWithEmailAndPassword } from 'firebase/auth'
+import { PropsWithChildren, createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { auth } from '../lib/firebase'
 
 type MinimalUser = Pick<User, 'uid' | 'email' | 'displayName'>
@@ -46,10 +34,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         }
         setUser(minimalUser)
         setOfflineMode(false)
-        await AsyncStorage.setItem(
-          LAST_USER_KEY,
-          JSON.stringify(minimalUser),
-        )
+        await AsyncStorage.setItem(LAST_USER_KEY, JSON.stringify(minimalUser))
       } else {
         setUser(null)
       }
@@ -69,7 +54,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
     await AsyncStorage.removeItem(LAST_USER_KEY)
   }
 
-  const enableOfflineMode = async () => {
+  const enableOfflineMode = useCallback(async () => {
     if (user) {
       setOfflineMode(true)
       return
@@ -82,7 +67,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
     } else {
       throw new Error('No cached profile available for offline mode.')
     }
-  }
+  }, [user])
 
   const disableOfflineMode = () => {
     setOfflineMode(false)
@@ -98,7 +83,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       enableOfflineMode,
       disableOfflineMode,
     }),
-    [user, initializing, offlineMode],
+    [user, initializing, offlineMode, enableOfflineMode]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
@@ -111,5 +96,3 @@ export const useAuth = () => {
   }
   return ctx
 }
-
-

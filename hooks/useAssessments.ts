@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
+import { useAuth } from '../contexts/AuthContext'
 import { subscribeToAssessments } from '../services/assessmentService'
 import { AssessmentRecord } from '../types/assessment'
-import { useAuth } from '../contexts/AuthContext'
 
 export function useAssessments() {
   const { user } = useAuth()
@@ -21,9 +21,7 @@ export function useAssessments() {
     })
 
     return () => unsubscribe()
-  }, [user?.uid])
+  }, [user, user?.uid])
 
   return { assessments, loading }
 }
-
-

@@ -1,8 +1,23 @@
 declare module 'firebase/auth' {
   export type Auth = any
+  export type User = {
+    uid: string
+    email?: string | null
+    displayName?: string | null
+  }
   export function getAuth(app?: any): Auth
   export function initializeAuth(app: any, options: any): Auth
   export function getReactNativePersistence(storage: any): any
+  export function onAuthStateChanged(
+    auth: Auth,
+    callback: (user: User | null) => void,
+  ): () => void
+  export function signInWithEmailAndPassword(
+    auth: Auth,
+    email: string,
+    password: string,
+  ): Promise<void>
+  export function signOut(auth: Auth): Promise<void>
 }
 
 declare module 'firebase/firestore' {

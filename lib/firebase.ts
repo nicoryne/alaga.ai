@@ -30,16 +30,16 @@ const createFirebaseApp = () => {
 
 const app = createFirebaseApp()
 
-let auth
+let auth: ReturnType<typeof getAuth>
 try {
-  auth = getAuth(app)
-} catch (error) {
   auth = initializeAuth(app, {
     persistence: getReactNativePersistence(AsyncStorage),
   })
+} catch (error) {
+  auth = getAuth(app)
 }
 
-let db
+let db: ReturnType<typeof getFirestore>
 try {
   db = getFirestore(app)
 } catch (error) {

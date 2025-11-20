@@ -9,7 +9,6 @@ import {
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useAuth } from '../contexts/AuthContext'
-import { theme } from '../theme'
 
 export default function LoginScreen() {
   const { signIn, enableOfflineMode, initializing } = useAuth()
@@ -114,10 +113,7 @@ export default function LoginScreen() {
             onPress={handleOffline}
             disabled={submitting}
           >
-            <Text
-              className="text-center text-base font-semibold"
-              style={{ color: theme.colors.accent }}
-            >
+            <Text className="text-center text-base font-semibold text-[#b39ddb]">
               Use Offline Mode
             </Text>
           </TouchableOpacity>

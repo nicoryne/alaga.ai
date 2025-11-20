@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "alaga.ai",
-    "slug": "alaga-ai",
+    "name": "alagaai",
+    "slug": "alagaai",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -16,7 +16,8 @@
         "backgroundColor": "#4FC3F7"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.alaga.ai"
     },
     "web": {
       "output": "static",
