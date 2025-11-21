@@ -2,8 +2,12 @@ export type TriageLevel = 'Mild' | 'Moderate' | 'Critical' | 'Unknown'
 
 export type SyncStatus = 'pending' | 'synced' | 'error'
 
+export type UserRole = 'superadmin' | 'doctor' | 'healthworker'
+
 export interface PatientRecord {
   id: string
+  healthWorkerId: string
+  doctorId?: string
   fullName: string
   age: number
   gender: 'Male' | 'Female' | 'Other' | ''
@@ -30,6 +34,3 @@ export interface PatientFormInput {
   municipality: string
   barangay: string
 }
-
-
-

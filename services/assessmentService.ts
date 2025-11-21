@@ -1,6 +1,7 @@
 import {
   QueryDocumentSnapshot,
   DocumentData,
+  QueryConstraint,
   addDoc,
   collection,
   doc,
@@ -21,6 +22,10 @@ import { db } from '../lib/firebase'
 const ASSESSMENTS_COLLECTION = 'assessments'
 const PATIENTS_COLLECTION = 'patients'
 
+type AssessmentSubscriptionScope =
+  | { healthWorkerId: string; doctorId?: undefined }
+  | { doctorId: string; healthWorkerId?: undefined }
+
 const normalizeAssessment = (
   docSnap: QueryDocumentSnapshot<DocumentData>,
 ): AssessmentRecord => {
@@ -37,6 +42,8 @@ const normalizeAssessment = (
   return {
     id: docSnap.id,
     patientId: data.patientId,
+    healthWorkerId: data.healthWorkerId ?? data.createdBy,
+    doctorId: data.doctorId,
     createdBy: data.createdBy,
     createdAt,
     updatedAt,
@@ -55,13 +62,22 @@ const normalizeAssessment = (
 }
 
 export const subscribeToAssessments = (
-  userId: string,
+  scope: AssessmentSubscriptionScope,
   callback: (assessments: AssessmentRecord[]) => void,
 ) => {
+  const constraints: QueryConstraint[] = []
+  if ('healthWorkerId' in scope) {
+    constraints.push(where('healthWorkerId', '==', scope.healthWorkerId))
+  } else if ('doctorId' in scope) {
+    constraints.push(where('doctorId', '==', scope.doctorId))
+  } else {
+    throw new Error('subscribeToAssessments requires a scope')
+  }
+  constraints.push(orderBy('createdAt', 'desc'))
+
   const assessmentQuery = query(
     collection(db, ASSESSMENTS_COLLECTION),
-    where('createdBy', '==', userId),
-    orderBy('createdAt', 'desc'),
+    ...constraints,
   )
 
   return onSnapshot(assessmentQuery, (snapshot) => {

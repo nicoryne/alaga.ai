@@ -10,6 +10,8 @@ export interface VitalsRecord {
 export interface AssessmentRecord {
   id: string
   patientId: string
+  healthWorkerId: string
+  doctorId?: string
   createdBy: string
   createdAt: number
   updatedAt: number
@@ -29,6 +31,8 @@ export interface AssessmentRecord {
 export interface AssessmentPayload {
   patientId: string
   createdBy: string
+  healthWorkerId: string
+  doctorId?: string
   vitals: VitalsRecord
   symptoms: string[]
   notes: string

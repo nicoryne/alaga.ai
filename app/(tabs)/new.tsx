@@ -51,7 +51,7 @@ const initialVitals = {
 type Step = 1 | 2 | 3 | 'loading'
 
 export default function NewAssessmentEntryScreen() {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const [form, setForm] = useState(initialForm)
   const [currentStep, setCurrentStep] = useState<Step>(1)
   const [patientId, setPatientId] = useState<string>()
@@ -197,13 +197,18 @@ export default function NewAssessmentEntryScreen() {
       // Save patient first if not already saved
       let finalPatientId = patientId
       if (!finalPatientId) {
-        finalPatientId = await createPatient(form, user.uid)
+        finalPatientId = await createPatient(form, {
+          healthWorkerId: user.uid,
+          doctorId: profile?.doctorId ?? undefined,
+        })
         setPatientId(finalPatientId)
       }
 
       const payload: AssessmentPayload = {
         patientId: finalPatientId,
         createdBy: user.uid,
+        healthWorkerId: user.uid,
+        doctorId: profile?.doctorId,
         vitals: {
           bloodPressure: vitals.bloodPressure,
           temperature: Number(vitals.temperature),

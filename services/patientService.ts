@@ -1,6 +1,7 @@
 import {
   QueryDocumentSnapshot,
   DocumentData,
+  QueryConstraint,
   addDoc,
   collection,
   doc,
@@ -16,6 +17,15 @@ import { PatientFormInput, PatientRecord } from '../types/patient'
 
 const PATIENTS_COLLECTION = 'patients'
 
+type PatientSubscriptionScope =
+  | { healthWorkerId: string; doctorId?: undefined }
+  | { doctorId: string; healthWorkerId?: undefined }
+
+interface CreatePatientContext {
+  healthWorkerId: string
+  doctorId?: string
+}
+
 const normalizePatient = (
   docSnap: QueryDocumentSnapshot<DocumentData>,
 ) => {
@@ -30,6 +40,8 @@ const normalizePatient = (
       : data.updatedAt ?? Date.now()
   return {
     id: docSnap.id,
+    healthWorkerId: data.healthWorkerId ?? data.createdBy ?? '',
+    doctorId: data.doctorId,
     fullName: data.fullName ?? '',
     age: data.age ?? 0,
     gender: data.gender ?? '',
@@ -48,14 +60,20 @@ const normalizePatient = (
 }
 
 export const subscribeToPatients = (
-  userId: string,
+  scope: PatientSubscriptionScope,
   callback: (patients: PatientRecord[]) => void,
 ) => {
-  const patientQuery = query(
-    collection(db, PATIENTS_COLLECTION),
-    where('createdBy', '==', userId),
-    orderBy('updatedAt', 'desc'),
-  )
+  const constraints: QueryConstraint[] = []
+  if ('healthWorkerId' in scope) {
+    constraints.push(where('healthWorkerId', '==', scope.healthWorkerId))
+  } else if ('doctorId' in scope) {
+    constraints.push(where('doctorId', '==', scope.doctorId))
+  } else {
+    throw new Error('subscribeToPatients requires a scope')
+  }
+  constraints.push(orderBy('updatedAt', 'desc'))
+
+  const patientQuery = query(collection(db, PATIENTS_COLLECTION), ...constraints)
 
   return onSnapshot(patientQuery, (snapshot) => {
     const records = snapshot.docs.map((docSnap) => {
@@ -77,7 +95,7 @@ export const subscribeToPatients = (
 
 export const createPatient = async (
   input: PatientFormInput,
-  userId: string,
+  context: CreatePatientContext,
 ) => {
   const payload = {
     fullName: input.fullName,
@@ -88,7 +106,9 @@ export const createPatient = async (
     province: input.province,
     municipality: input.municipality,
     barangay: input.barangay,
-    createdBy: userId,
+    createdBy: context.healthWorkerId,
+    healthWorkerId: context.healthWorkerId,
+    doctorId: context.doctorId ?? null,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
     syncStatus: 'pending',

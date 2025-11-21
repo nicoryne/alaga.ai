@@ -5,6 +5,9 @@ declare module 'firebase/auth' {
     email?: string | null
     displayName?: string | null
   }
+  export interface UserCredential {
+    user: User
+  }
   export function getAuth(app?: any): Auth
   export function initializeAuth(app: any, options: any): Auth
   export function getReactNativePersistence(storage: any): any
@@ -16,7 +19,7 @@ declare module 'firebase/auth' {
     auth: Auth,
     email: string,
     password: string,
-  ): Promise<void>
+  ): Promise<UserCredential>
   export function signOut(auth: Auth): Promise<void>
 }
 

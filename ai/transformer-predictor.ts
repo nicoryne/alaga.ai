@@ -31,6 +31,14 @@ function loadOnnxRuntime(): boolean {
   }
   
   onnxLoadAttempted = true
+
+  // Only attempt to load ONNX Runtime when explicitly enabled.
+  // Expo Go doesn't support native modules, so we default to fallback mode.
+  const useOnnxRuntime = process.env.EXPO_PUBLIC_USE_ONNX_RUNTIME === 'true'
+  if (!useOnnxRuntime) {
+    console.warn('ONNX Runtime disabled (EXPO_PUBLIC_USE_ONNX_RUNTIME != true); using fallback predictions')
+    return false
+  }
   
   try {
     // Use dynamic require inside function to prevent module load errors

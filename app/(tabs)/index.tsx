@@ -33,10 +33,11 @@ export default function HomeScreen() {
   const { patients } = usePatients()
   const { assessments } = useAssessments()
   const { isOnline } = useConnectivity()
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
 
   // Get user's display name or email
-  const userName = user?.displayName || user?.email?.split('@')[0] || 'Health Worker'
+  const userName =
+    profile?.displayName || user?.displayName || user?.email?.split('@')[0] || 'Health Worker'
   const userInitials = userName
     .split(' ')
     .map((part) => part[0])

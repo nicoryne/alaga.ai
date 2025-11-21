@@ -25,7 +25,13 @@ export default function LoginScreen() {
     try {
       await signIn(email.trim(), password)
     } catch (err) {
-      setError('Unable to sign in. Check your credentials and connection.')
+      if (err instanceof Error && err.message === 'ROLE_NOT_ALLOWED') {
+        setError('Only health workers can sign in to the mobile app.')
+      } else if (err instanceof Error && err.message === 'PROFILE_NOT_FOUND') {
+        setError('Your account is missing a role assignment. Contact an administrator.')
+      } else {
+        setError('Unable to sign in. Check your credentials and connection.')
+      }
     } finally {
       setSubmitting(false)
     }

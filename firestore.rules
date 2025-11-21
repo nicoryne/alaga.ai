@@ -1,29 +1,53 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    function isOwner(resource) {
-      return request.auth != null
-        && request.auth.uid == resource.data.createdBy;
+    function role() {
+      return request.auth != null ? request.auth.token.role : null;
     }
 
-    function hasRole(role) {
-      return request.auth != null
-        && role in request.auth.token.roles;
+    function isHealthWorker() {
+      return role() == 'healthworker';
+    }
+
+    function isDoctor() {
+      return role() == 'doctor';
+    }
+
+    function isSuperAdmin() {
+      return role() == 'superadmin';
+    }
+
+    match /users/{userId} {
+      allow read: if request.auth != null
+        && (userId == request.auth.uid || isSuperAdmin());
+      allow write: if isSuperAdmin();
     }
 
     match /patients/{patientId} {
-      allow read, write: if isOwner(resource) || hasRole('doctor') || hasRole('admin');
-      allow update: if request.resource.data.keys().hasOnly([
-        'fullName','age','gender','contactNumber','region','province','barangay',
-        'latestAssessmentId','latestTriage','syncStatus','updatedAt'
-      ]);
+      allow create: if isHealthWorker()
+        && request.resource.data.healthWorkerId == request.auth.uid;
+      allow read, update, delete: if isHealthWorker()
+        && resource.data.healthWorkerId == request.auth.uid;
+      allow read: if isDoctor()
+        && resource.data.doctorId == request.auth.uid;
     }
 
     match /assessments/{assessmentId} {
-      allow read: if isOwner(resource) || hasRole('doctor') || hasRole('admin');
-      allow create: if request.resource.data.createdBy == request.auth.uid;
-      allow update: if hasRole('doctor') || (isOwner(resource) && request.resource.data.syncStatus in ['pending','synced','error']);
+      allow create: if isHealthWorker()
+        && request.resource.data.healthWorkerId == request.auth.uid;
+      allow read, update, delete: if isHealthWorker()
+        && resource.data.healthWorkerId == request.auth.uid;
+      allow read: if isDoctor()
+        && resource.data.doctorId == request.auth.uid;
+    }
+
+    match /stats/{docId} {
+      allow read: if request.auth != null;
+      allow write: if isSuperAdmin();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
-
