@@ -1,9 +1,18 @@
 import '@/global.css'
 import { Stack } from 'expo-router'
+import { useEffect } from 'react'
 import { AuthProvider } from '../contexts/AuthContext'
 import { ConnectivityProvider } from '../contexts/ConnectivityContext'
+import { initializeModels } from '../ai/model-initializer'
 
 export default function AppLayout() {
+  useEffect(() => {
+    // Initialize AI models in the background
+    initializeModels().catch((error) => {
+      console.error('Failed to initialize AI models:', error)
+    })
+  }, [])
+
   return (
     <ConnectivityProvider>
       <AuthProvider>
