@@ -35,6 +35,7 @@ const initialForm: PatientFormInput = {
   age: '',
   gender: '',
   contactNumber: '',
+  preferredLanguage: '',
   region: '',
   province: '',
   municipality: '',
@@ -155,10 +156,20 @@ export default function NewAssessmentEntryScreen() {
   }
 
   const handleAnalyze = async () => {
-    if (!patientId) {
+    // Validate that patient information is complete
+    if (!form.fullName || !form.age || !form.gender || !form.region || !form.province || !form.municipality || !form.barangay) {
       Alert.alert(
-        'Patient required',
-        'Complete patient information before running assessment.',
+        'Patient information incomplete',
+        'Please complete all patient information fields in Step 1 before running assessment.',
+      )
+      return
+    }
+
+    // Validate vitals
+    if (!vitals.bloodPressure || !vitals.temperature || !vitals.heartRate || !vitals.oxygenLevel) {
+      Alert.alert(
+        'Vitals incomplete',
+        'Please fill in all vital signs before running assessment.',
       )
       return
     }
@@ -177,6 +188,7 @@ export default function NewAssessmentEntryScreen() {
         vitals: parsedVitals,
         symptoms,
         notes,
+        preferredLanguage: (form.preferredLanguage || 'English') as 'English' | 'Tagalog' | 'Cebuano',
       })
 
       setResult(aiResult)
@@ -191,17 +203,38 @@ export default function NewAssessmentEntryScreen() {
   }
 
   const handleSaveAssessment = async () => {
-    if (!user || !result) return
+    if (!user || !result) {
+      Alert.alert('Error', 'Missing user or assessment result')
+      return
+    }
     setSavingAssessment(true)
     try {
       // Save patient first if not already saved
       let finalPatientId = patientId
       if (!finalPatientId) {
-        finalPatientId = await createPatient(form, {
-          healthWorkerId: user.uid,
-          doctorId: profile?.doctorId ?? undefined,
-        })
-        setPatientId(finalPatientId)
+        try {
+          finalPatientId = await createPatient(form, {
+            healthWorkerId: user.uid,
+            doctorId: profile?.doctorId ?? undefined,
+          })
+          setPatientId(finalPatientId)
+        } catch (patientError) {
+          console.error('Failed to create patient:', patientError)
+          throw new Error(
+            `Failed to save patient: ${patientError instanceof Error ? patientError.message : 'Unknown error'}`,
+          )
+        }
+      }
+
+      // Validate required fields
+      if (!finalPatientId) {
+        throw new Error('Patient ID is missing')
+      }
+      if (!result.triageLevel) {
+        throw new Error('Triage level is missing')
+      }
+      if (!result.probableConditions || result.probableConditions.length === 0) {
+        throw new Error('Probable conditions are missing')
       }
 
       const payload: AssessmentPayload = {
@@ -231,9 +264,12 @@ export default function NewAssessmentEntryScreen() {
         'Patient and assessment have been stored locally and will sync when online.',
       )
     } catch (error) {
+      console.error('Failed to save assessment:', error)
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error occurred'
       Alert.alert(
         'Save failed',
-        'Unable to store this assessment right now. Please try again shortly.',
+        `Unable to store this assessment right now. ${errorMessage}`,
       )
     } finally {
       setSavingAssessment(false)
@@ -389,6 +425,15 @@ export default function NewAssessmentEntryScreen() {
             onSelect={(value) => updateField('barangay', value)}
             disabled={!form.municipality}
             required
+          />
+        </View>
+        <View>
+          <Dropdown
+            label="Preferred Language"
+            placeholder="Select Language"
+            options={['English', 'Tagalog', 'Cebuano']}
+            value={form.preferredLanguage}
+            onSelect={(value) => updateField('preferredLanguage', value)}
           />
         </View>
       </View>

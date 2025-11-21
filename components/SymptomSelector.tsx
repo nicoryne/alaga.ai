@@ -21,8 +21,9 @@ const Chip = ({
   selected: boolean
   onPress: () => void
 }) => {
-  const base =
-    'mr-2 mb-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors'
+  // Note: transition-colors removed for Expo Go compatibility
+  // Expo Go doesn't support Reanimated transitions used by Nativewind v4
+  const base = 'mr-2 mb-2 rounded-full border px-4 py-2 text-sm font-medium'
   const selectedStyles = selected
     ? 'border-[#4fc3f7] bg-[#e0f5ff] text-[#0284c7]'
     : 'border-gray-200 bg-white text-gray-600'

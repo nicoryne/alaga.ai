@@ -7,6 +7,7 @@ import {
   filterByThreshold,
   DiseasePrediction,
 } from './fusion-layer'
+import { translateActions, PreferredLanguage } from '../utils/translations'
 
 export type AssessmentInputs = {
   patientName: string
@@ -18,6 +19,7 @@ export type AssessmentInputs = {
   }
   symptoms: CommonSymptom[]
   notes: string
+  preferredLanguage?: PreferredLanguage
 }
 
 export type AssessmentResult = {
@@ -173,6 +175,10 @@ export async function runAssessment(
 
     // Generate recommendations
     const recommendedActions = generateRecommendedActions(triageLevel, topConditions)
+    
+    // Translate actions based on patient's preferred language
+    const preferredLanguage = inputs.preferredLanguage || 'English'
+    const translatedActions = translateActions(recommendedActions, preferredLanguage)
 
     // Generate explanation
     const explanation = `Based on ${inputs.symptoms.length} symptom${
@@ -193,7 +199,7 @@ export async function runAssessment(
         name: pred.disease,
         probability: pred.probability,
       })),
-      recommendedActions,
+      recommendedActions: translatedActions,
       simplifiedSummary,
     }
   } catch (error) {

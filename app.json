@@ -17,7 +17,8 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.alaga.ai"
+      "package": "com.alaga.ai",
+      "versionCode": 1
     },
     "web": {
       "output": "static",

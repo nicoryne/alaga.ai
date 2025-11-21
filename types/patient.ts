@@ -4,6 +4,8 @@ export type SyncStatus = 'pending' | 'synced' | 'error'
 
 export type UserRole = 'superadmin' | 'doctor' | 'healthworker'
 
+export type PreferredLanguage = 'English' | 'Tagalog' | 'Cebuano'
+
 export interface PatientRecord {
   id: string
   healthWorkerId: string
@@ -12,6 +14,7 @@ export interface PatientRecord {
   age: number
   gender: 'Male' | 'Female' | 'Other' | ''
   contactNumber?: string
+  preferredLanguage?: PreferredLanguage
   region: string
   province: string
   municipality: string
@@ -29,6 +32,7 @@ export interface PatientFormInput {
   age: string
   gender: 'Male' | 'Female' | 'Other' | ''
   contactNumber: string
+  preferredLanguage: PreferredLanguage | ''
   region: string
   province: string
   municipality: string

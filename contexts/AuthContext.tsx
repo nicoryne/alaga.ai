@@ -44,6 +44,7 @@ interface AuthContextState {
   signOut: () => Promise<void>
   enableOfflineMode: () => Promise<void>
   disableOfflineMode: () => void
+  refreshProfile: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextState | null>(null)
@@ -155,6 +156,24 @@ export function AuthProvider({ children }: PropsWithChildren) {
     setOfflineMode(false)
   }
 
+  const refreshProfile = useCallback(async () => {
+    if (!user) return
+    try {
+      const fetchedProfile = await fetchUserProfile(user.uid)
+      setProfile(fetchedProfile)
+      // Update cached profile
+      const minimalUser: MinimalUser = {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+      }
+      const cachePayload: CachedSession = { user: minimalUser, profile: fetchedProfile }
+      await AsyncStorage.setItem(LAST_USER_KEY, JSON.stringify(cachePayload))
+    } catch (error) {
+      console.warn('Failed to refresh profile:', error)
+    }
+  }, [user])
+
   const value = useMemo(
     () => ({
       user,
@@ -165,8 +184,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
       signOut,
       enableOfflineMode,
       disableOfflineMode,
+      refreshProfile,
     }),
-    [user, profile, initializing, offlineMode, enableOfflineMode]
+    [user, profile, initializing, offlineMode, enableOfflineMode, refreshProfile]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

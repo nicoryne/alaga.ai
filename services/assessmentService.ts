@@ -96,24 +96,39 @@ export const subscribeToAssessments = (
 }
 
 export const createAssessmentRecord = async (payload: AssessmentPayload) => {
-  const record = {
-    ...payload,
-    status: 'complete',
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-    syncStatus: 'pending',
+  try {
+    const record = {
+      ...payload,
+      status: 'complete',
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      syncStatus: 'pending',
+    }
+
+    const docRef = await addDoc(collection(db, ASSESSMENTS_COLLECTION), record)
+
+    // Update patient with latest assessment info
+    // This might fail if patient doesn't exist, but we'll continue anyway
+    try {
+      await updateDoc(doc(db, PATIENTS_COLLECTION, payload.patientId), {
+        latestAssessmentId: docRef.id,
+        latestTriage: payload.triageLevel,
+        updatedAt: serverTimestamp(),
+        syncStatus: 'pending',
+      })
+    } catch (patientUpdateError) {
+      console.warn(
+        'Failed to update patient with latest assessment:',
+        patientUpdateError,
+      )
+      // Continue even if patient update fails - assessment is still saved
+    }
+
+    return docRef.id
+  } catch (error) {
+    console.error('Failed to create assessment record:', error)
+    throw error
   }
-
-  const docRef = await addDoc(collection(db, ASSESSMENTS_COLLECTION), record)
-
-  await updateDoc(doc(db, PATIENTS_COLLECTION, payload.patientId), {
-    latestAssessmentId: docRef.id,
-    latestTriage: payload.triageLevel,
-    updatedAt: serverTimestamp(),
-    syncStatus: 'pending',
-  })
-
-  return docRef.id
 }
 
 
