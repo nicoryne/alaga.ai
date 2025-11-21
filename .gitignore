@@ -42,5 +42,17 @@ app-example
 /ios
 /android
 
-# models
-models/*/
+# models - allow model files needed for app (they're required for EAS builds)
+# Note: Model files are large (255MB+), consider using Git LFS for production
+# models/**/*.onnx
+# models/**/*.tflite
+models/**/*.csv
+models/**/tokenizer/*.txt
+# Allow all JSON and model files needed for runtime
+!models/**/possible_symptoms.json
+!models/**/idx_to_disease.json
+!models/**/xgboost_model.json
+!models/**/fusion_weights.json
+!models/manifest.json
+!models/**/*.onnx
+!models/**/*.tflite
