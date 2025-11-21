@@ -2,13 +2,22 @@
   "version": "0.1.0",
   "models": [
     {
-      "id": "symptom-classifier",
+      "id": "symptom-transformer",
       "type": "onnx",
-      "path": "models/symptom/model-symptom.onnx",
-      "description": "DistilBERT symptom classifier fine-tuned on shanover/disease_symptoms_prec_full; outputs disease probabilities for text symptoms.",
+      "path": "models/symptom/transformer_model.onnx",
+      "description": "DistilBERT transformer model for symptom text analysis. Part of hybrid system with XGBoost.",
       "input": ["input_ids", "attention_mask"],
       "output": ["logits"],
-      "sizeMB": 255.63
+      "sizeMB": 250
+    },
+    {
+      "id": "symptom-xgboost",
+      "type": "json",
+      "path": "models/symptom/xgboost_model.json",
+      "description": "XGBoost model for structured symptom features. Part of hybrid system with Transformer.",
+      "input": ["float_input"],
+      "output": ["probabilities"],
+      "sizeMB": 5
     },
     {
       "id": "image-diagnostic",

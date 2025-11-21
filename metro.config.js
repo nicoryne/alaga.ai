@@ -6,4 +6,7 @@ const config = getDefaultConfig(__dirname)
 
 config.resolver.unstable_enablePackageExports = true
 
+// Add .onnx and .tflite as asset extensions
+config.resolver.assetExts.push('onnx', 'tflite')
+
 module.exports = withNativeWind(config, { input: './global.css' })
