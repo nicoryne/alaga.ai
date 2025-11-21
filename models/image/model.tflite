@@ -1,2 +1,3 @@
-placeholder tflite model file - replace with quantized CNN weights
-
+version https://git-lfs.github.com/spec/v1
+oid sha256:30f620fee08f5a3e62a6dceefd2c506b2e6d356a201b6879ac22d21d3d7541d0
+size 70
